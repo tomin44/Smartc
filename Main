@@ -1,0 +1,58 @@
+// Import necessary Ethereum libraries
+use ethereum_types::U256;
+use parity_hash::Keccak256;
+use tiny_keccak::Keccak;
+
+// Define the Token contract struct
+struct Token {
+    balances: std::collections::HashMap<Address, U256>,
+}
+
+// Define the Address type
+type Address = [u8; 20];
+
+// Implement the Token contract methods
+impl Token {
+    // Constructor to initialize the Token contract
+    fn new() -> Self {
+        Token {
+            balances: std::collections::HashMap::new(),
+        }
+    }
+
+    // Function to mint tokens to an address
+    fn mint(&mut self, recipient: Address, amount: U256) {
+        let balance = self.balances.entry(recipient).or_insert(U256::zero());
+        *balance += amount;
+    }
+
+    // Function to transfer tokens between addresses
+    fn transfer(&mut self, sender: Address, recipient: Address, amount: U256) -> Result<(), &'static str> {
+        let sender_balance = self.balances.get_mut(&sender).ok_or("Sender does not exist")?;
+        let recipient_balance = self.balances.entry(recipient).or_insert(U256::zero());
+
+        if *sender_balance < amount {
+            return Err("Insufficient balance");
+        }
+
+        *sender_balance -= amount;
+        *recipient_balance += amount;
+        Ok(())
+    }
+}
+
+fn main() {
+    // Create a new Token contract instance
+    let mut token_contract = Token::new();
+
+    // Mint some tokens to an address
+    let recipient_address: Address = [0u8; 20];
+    let amount = U256::from(100);
+    token_contract.mint(recipient_address, amount);
+
+    // Transfer tokens between addresses
+    let sender_address: Address = [1u8; 20];
+    let recipient_address: Address = [2u8; 20];
+    let transfer_amount = U256::from(50);
+    token_contract.transfer(sender_address, recipient_address, transfer_amount);
+}
