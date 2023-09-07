@@ -33,7 +33,7 @@ impl Token {
         let recipient_balance = self.balances.entry(recipient).or_insert(U256::zero());
 
         if *sender_balance < amount {
-            return Err("Insufficient balance");
+            return Err("Insufficient balance in wallet");
         }
 
         *sender_balance -= amount;
